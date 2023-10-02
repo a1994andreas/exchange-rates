@@ -1,29 +1,32 @@
 package com.bv.assessment.utils;
 
 import com.bv.assessment.client.ex.ExchangeRatesClient;
-import com.bv.assessment.model.Currency;
-import com.bv.assessment.model.ExchangeRate;
+import com.bv.assessment.exception.NoClientsAvailableException;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Component
 public class ExchangeRatesProvider {
-	private ExchangeRatesClient exchangeRatesClient;
+	private ExchangeRatesClient exchangeRatesHostClient;
+	private ExchangeRatesClient exchangeRatesV6Client;
+	private CheckConnectionUtil checkConnectionUtil;
 
-	public ExchangeRatesProvider(@Qualifier("exchangeRatesHostClient") ExchangeRatesClient exchangeRatesClient) {
-		this.exchangeRatesClient = exchangeRatesClient;
+	public ExchangeRatesProvider(@Qualifier("exchangeRatesHostClient") ExchangeRatesClient exchangeRatesHostClient,
+			@Qualifier("exchangeRatesV6Client") ExchangeRatesClient exchangeRatesV6Client, CheckConnectionUtil checkConnectionUtil) {
+		this.exchangeRatesHostClient= exchangeRatesHostClient;
+		this.exchangeRatesV6Client = exchangeRatesV6Client;
+		this.checkConnectionUtil = checkConnectionUtil;
 	}
 
-	@Cacheable(value = "exchangeRates")
-	public ExchangeRate getExchangeRate(Currency baseCurrency, Currency toCurrency) {
-		return exchangeRatesClient.getExchangeRate(baseCurrency, toCurrency);
-	}
-
-	@Cacheable(value = "exchangeRates")
-	public List<ExchangeRate> getAllExchangeRatesForCurrency(Currency baseCurrency) {
-		return exchangeRatesClient.getAllExchangeRatesForCurrency(baseCurrency);
+	@SneakyThrows
+	public ExchangeRatesClient pickHealthyClient() {
+		if (checkConnectionUtil.checkConnection(exchangeRatesHostClient.getBaseUrl())) {
+			return exchangeRatesHostClient;
+		} else if (checkConnectionUtil.checkConnection(exchangeRatesV6Client.getBaseUrl())) {
+			return exchangeRatesV6Client;
+		} else {
+			throw new NoClientsAvailableException("Service not available");
+		}
 	}
 }

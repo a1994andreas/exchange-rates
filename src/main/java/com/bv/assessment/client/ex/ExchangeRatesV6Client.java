@@ -7,17 +7,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
 * Based on doc https://www.exchangerate-api.com/docs/standard-requests
- * This client supports multiple base currencies but it always return all
+ * This client supports multiple currencies as source but it always return all
  * the available exchange rates. So the filtering was done in our side.
 * */
 @Component
-public class ExchangeRatesV6Client implements ExchangeRatesClient {
+public class ExchangeRatesV6Client implements ExchangeRatesClient, Serializable {
 
 	private RestTemplate restTemplate;
 	private static final String BASE_EXCHANGE_RATES_URL = "https://v6.exchangerate-api.com/v6/";
@@ -46,6 +47,10 @@ public class ExchangeRatesV6Client implements ExchangeRatesClient {
 				.collect(Collectors.toList());
 		return exchangeRates;
 
+	}
+
+	@Override public String getBaseUrl() {
+		return BASE_EXCHANGE_RATES_URL;
 	}
 
 	private String generateURL(Currency baseCurrency) {

@@ -10,4 +10,6 @@ public interface ExchangeRatesClient {
 	ExchangeRate getExchangeRate(Currency baseCurrency, Currency toCurrency);
 
 	List<ExchangeRate> getAllExchangeRatesForCurrency(Currency baseCurrency);
+
+	String getBaseUrl();
 }

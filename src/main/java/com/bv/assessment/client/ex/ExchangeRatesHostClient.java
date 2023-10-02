@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +22,7 @@ import java.util.stream.Collectors;
  * So i had to adapt my solution  and request the exchange rates in USD and then do the conversions.
  */
 @Component
-public class ExchangeRatesHostClient implements ExchangeRatesClient {
+public class ExchangeRatesHostClient implements ExchangeRatesClient, Serializable {
 	private RestTemplate restTemplate;
 	private static final String BASE_EXCHANGE_RATES_URL = "http://api.exchangerate.host/live";
 	private static final String ACCESS_KEY = "a3185b0c6212b372700fbc763ca585f6";
@@ -49,6 +50,10 @@ public class ExchangeRatesHostClient implements ExchangeRatesClient {
 				.filter(e -> Arrays.stream(Currency.values()).filter( c->c.name().equals(e.getKey())).findFirst().isPresent()) // filter supported currencies
 				.map( e -> new ExchangeRate(baseCurrency, Currency.valueOf(e.getKey()), calculateExchangeRate(e.getValue(), baseCurrencyToUsd)))
 				.collect(Collectors.toList());
+	}
+
+	@Override public String getBaseUrl() {
+		return BASE_EXCHANGE_RATES_URL;
 	}
 
 	private Map<String, Double> getExchangeRatesInUsd(String url) {

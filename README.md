@@ -6,9 +6,11 @@
 - I have integrated with two exchange rates clients. Based on those two providers:
 - - https://exchangerate.host/documentation
 - - https://www.exchangerate-api.com/docs/standard-requests
-
+- I have wrapped those clients in ExchangeRatesProvider that checks in runtime the connectivity and 
+  picks a client.
+- - The connectivity response is cached for 10 seconds to avoid unnecessary calls on the client
 - I have used Redis for caching with a ttl of 60 seconds.
-- - ExchangeRatesProvider is the class that wraps the clients and is responsible for caching
+- - ExchangeRatesCache is the class that uses ExchangeRatesProvider and provides the cached exchange rates
 - - Both ExchangeRatesService and CurrencyConversionService are using the cache.
 
 - Swagger is configured and can be found at http://localhost:8080/swagger-ui.html
